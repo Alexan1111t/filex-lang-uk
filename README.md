@@ -1,248 +1,114 @@
-# filex language pack template
+# Українська локалізація для filex
 
-Translate [filex](https://github.com/BRF-Tech/filex) — the self-hosted file
-manager — into your language, and ship it as a **language pack** any filex
-server installs in one step.
+Повний український мовний пакет для [filex](https://github.com/BRF-Tech/filex) — самостійно розгорнутого файлового менеджера з вебінтерфейсом.
 
-A language pack is a single file, `filex-app.json`. It has no code and no
-build: filex reads your translations from it and offers your language in every
-picker — the settings dialog, the admin panel, and the public pages a share
-link opens. The file explorer, the admin panel and those public pages all
-switch to it. Anything you have not translated yet shows in English, so a pack
-is useful from the first string.
+Пакет перекладає файловий менеджер, адміністративну панель, налаштування, публічні сторінки, сповіщення, електронні листи та серверні повідомлення.
 
-This repository gives you everything a translator needs:
+## Стан перекладу
 
-- the **catalogue** — every string of the filex interface, in English, with
-  where it appears and which rules its translation follows;
-- a **validator** that checks your translation the way filex will;
-- a small **workflow script** that starts your language, shows you what is left,
-  and writes `filex-app.json` for you;
-- a **CI check**, so a broken string never reaches a server.
+- Мова: українська (`uk`)
+- Сумісність каталогу: filex `0.61.2`
+- Перекладено: 7 518 із 7 518 рядків (100%)
+- Помилки валідатора: 0
+- Попередження валідатора: 0
 
-All of it runs on Node.js 18 or newer. Nothing to install.
+> Переклад створено автоматично та перевірено офіційним валідатором filex. Формулювання можуть потребувати подальшого редагування носіями української мови. Виправлення через Issues та Pull Requests вітаються.
 
----
+## Встановлення з GitHub
 
-## 1. Start
+1. Увійдіть у filex як адміністратор.
+2. Відкрийте **Admin → Plugins → Apps**.
+3. Натисніть **Install an app**.
+4. Виберіть **GitHub repository**.
+5. У полі **Repository** введіть:
 
-Click **Use this template** on GitHub (or clone the repository), name it
-`filex-lang-<your language>`, then:
+   ```text
+   Alexan1111t/filex-lang-uk
+   ```
 
-```bash
-node scripts/pack.mjs start es "Spanish"
+6. У полі **Ref** введіть `main` або залиште його порожнім.
+7. Натисніть **Review permissions**, перевірте інформацію та завершіть встановлення.
+
+Мовний пакет не містить виконуваного модуля та не запитує дозволів на доступ до файлів.
+
+## Встановлення з файлу
+
+1. Завантажте `filex-app.json` із цього репозиторію.
+2. У filex відкрийте **Admin → Plugins → Apps → Install an app**.
+3. Виберіть **Upload files**.
+4. Завантажте `filex-app.json` як файл маніфесту.
+5. Поля модуля, бінарного файлу та інтерфейсного пакета залиште порожніми.
+6. Перегляньте інформацію та підтвердьте встановлення.
+
+## Увімкнення української мови
+
+Після встановлення відкрийте:
+
+```text
+Settings → Preferences → Language → Українська
 ```
 
-Use your language's tag: `es`, `de`, `pt-br`, `zh-hant`, `ar`… (a region, like
-`pt-br` or `es-mx`, also gives that region's date and number formats). This
-creates `translations/es.json` with every key of the catalogue and an empty
-value, removes the placeholder `xx` sample, and names your pack `lang-es`.
+Мову можна вибирати окремо для кожного облікового запису. Вона також доступна на публічних сторінках спільного доступу.
 
-Open `filex-app.json` and adjust the `label`, `description` and `homepage` — the
-administrator sees them when installing.
+## Оновлення
 
-## 2. Translate
+Якщо пакет установлено з GitHub, filex періодично перевіряє гілку `main`. Коли в маніфесті з’явиться новіша версія, у списку застосунків буде запропоновано оновлення.
 
-Fill in the values of `translations/<tag>.json`. The English is in
-`catalogue/filex-catalogue-en.json` (same keys, same order — an editor with a
-split view makes this pleasant), and one command shows you what is next, with
-context:
+Оновлення не встановлюється автоматично: адміністратор має переглянути його та підтвердити.
 
-```bash
-node scripts/pack.mjs next 20
-```
+Якщо пакет установлено з локального файлу, завантажте новий `filex-app.json` і скористайтеся дією **Upgrade** біля встановленого пакета.
 
-```
-  ctx.download   (explorer · plain)
-    en: "Download"
-    tr: "İndir"
-    in: packages/core/src/FileExplorer.vue, …
-```
+## Розробка та перевірка
 
-An empty value means *not translated yet* — filex shows the English for it.
-Translate in any order, commit as often as you like.
-
-### The rules, in one table
-
-filex draws its text with two renderers, and the server writes some of it
-itself, so a string's rules depend on where it lives. The catalogue says so for
-every key (`in` / `syntax` in `catalogue/filex-catalogue-context.json`, and
-`next` prints it):
-
-| | `explorer` (plain) | `admin` (vue-i18n) | `both` | `server` |
-|---|---|---|---|---|
-| where | the file manager | the admin panel | drawn by both | e-mails, notifications, the public pages |
-| placeholders | keep `{name}` exactly | keep `{name}` exactly | keep `{name}` exactly | keep `{name}` exactly — **all of them** |
-| plural | a form per category, as its own key: `…_one`, `…_few` … ([Plural forms](#plural-forms)) | the forms in one string, split by a bar, in CLDR order ([Plural forms](#plural-forms)) | — | as the explorer |
-| `@` | write it as is | write `{'@'}` | avoid it | write it as is |
-| a literal bar | write it as is | write `{'\|'}` | avoid it | write it as is |
-| a `%` right before `{` | as is | write `{'%'}{percent}` — `%{percent}` loses the `%` | avoid it | as is |
-| `{'…'}` | never — it prints as written | the way to write `@ \| { }` | never | never — it prints as written |
-
-A `server` string is the strict one: it is the only table where **leaving a
-placeholder out is an error**, not a warning. The server re-checks each
-translation as it sends it, and a line whose placeholders differ from the
-English is dropped in favour of the English — better a message in the wrong
-language than a share e-mail without its link. An e-mail subject is one line.
-
-In every table, a dash is the plain hyphen `-`: ` - ` between two clauses,
-`3-60` for a range, `-1` for a negative number. The validator refuses an em
-dash, an en dash and the characters that only pass for a hyphen (U+2010,
-U+2011, U+2012, U+2015 and the minus sign U+2212): they read as a machine's
-hand, and a search for "read-only" misses the word spelled with U+2011. The one
-exception is a label that is the minus sign alone, such as a zoom-out button.
-
-### Plural forms
-
-filex picks a plural form by the **CLDR category** the count falls into in the
-reader's language — `Intl.PluralRules` in the browser, the same Unicode rules
-on the server: `zero`, `one`, `two`, `few`, `many`, `other`. Your language has
-the categories its whole numbers fall into: English and Spanish `one`, `other`;
-Russian and Polish `one`, `few`, `many`, `other`; Arabic and Welsh all six;
-Japanese and Chinese only `other`. `plural_categories` in
-`catalogue/filex-catalogue-context.json` lists them for ~60 languages, and the
-validator prints yours.
-
-In the **explorer** and **server** tables each form is its own key. The plain
-key is the `other` form and the fallback; there is no `_other`:
-
-```json
-"toast.restored_zero": "لم تتم استعادة أي عنصر",
-"toast.restored_one":  "تمت استعادة عنصر واحد",
-"toast.restored_two":  "تمت استعادة عنصرين",
-"toast.restored_few":  "تمت استعادة {n} عناصر",
-"toast.restored_many": "تمت استعادة {n} عنصرًا",
-"toast.restored":      "تمت استعادة {n} عنصر"
-```
-
-In the **admin** table the forms live inside one string, split by a bar, in
-CLDR order of **your** categories — six for Arabic, four for Russian — or the
-classic 1 form (a language that does not inflect), 2 (`one \| other`) or 3
-(`zero \| one \| other`). Any other number of forms is refused.
-
-Two rules worth the ink:
-
-- **Keep the count placeholder in every form.** `{n}`, `{count}` or `{days}` is
-  the number as the reader's language formats it; a literal `1` typed into a
-  `_one` form is a bug, and filex has fixed exactly that in its own English and
-  Turkish. The one exception is a category that holds a single number in your
-  language *and* whose natural wording says that number as a **word** — Arabic
-  `zero`, `one` and the dual (*يوم واحد*, "one day"). Where a category holds
-  several numbers (Russian `one` is also 21, 31, 101…) the count must stay.
-- **Write a form only where the words change.** A form you leave out shows your
-  plain form — never the English — so `"{n}%"` or `"Page {n} of {m}"` needs no
-  second form. A form for a category your language does not have is never read,
-  and the validator says `UNUSED`.
-
-Keep `` `code` `` spans, product names and paths as they are. The full guide
-is in the filex documentation:
-[Writing a language pack](https://docs.filex.sh/PLUGIN-KIT#writing-a-language-pack).
-
-## 3. Validate
-
-```bash
-node scripts/pack.mjs build          # writes filex-app.json from translations/
-node scripts/validate.mjs filex-app.json
-```
-
-```
-[es] 97% translated — 3491 of 3588 strings; the other 97 show in English
-  plural categories: one, other — explorer/server keys take <key>_one beside
-  the plain key (other); admin strings take 2 | forms in that order
-  errors: 0 (none) · warnings: 0 (none)
-```
-
-The validator checks every string against the catalogue: placeholders, plural
-forms, the `@` / bar / `{'…'}` / `%{` rules for the table it belongs to, the
-plain hyphen, key shapes and the size limits filex enforces. It exits non-zero on an error.
-
-The limits are **bytes**, not a count of strings — the old 2 000-strings cap is
-gone, because filex's catalogue is 7 518 keys. One language: **1 MiB** of keys
-plus values (a complete translation runs ~400 KB, more in a two-byte script).
-One manifest: **4 MiB** across its languages, and **16 MiB** as a document.
-One key: **128 bytes**, of the dotted shape above. One string: **4 KiB**.
-
-Add `--missing` to list what is left, `--complete` to make a missing string an
-error, and `--plurals` to list the plural keys that still lack a form for one
-of your language's categories.
-
-For the strictest check of admin-panel strings, install vue-i18n's own parser
-once — the validator uses it when it is there:
+Для роботи потрібен Node.js 18 або новіший.
 
 ```bash
 npm install
+node scripts/pack.mjs build
+node scripts/validate.mjs filex-app.json
 ```
 
-The included GitHub Actions workflow runs `build --check` and the validator on
-every push and pull request.
+Файл перекладу знаходиться тут:
 
-## 4. Install
+```text
+translations/uk.json
+```
 
-Commit `filex-app.json` and push. On any filex server (v0.43.0 or newer), an
-administrator opens **Plugins → Apps → Install an app** and chooses:
+Перед публікацією змін:
 
-- **GitHub** — `your-name/filex-lang-es` (and a tag or branch, if you like).
-  filex reads `filex-app.json` from the repository root. No release needed.
-- **Files** — upload `filex-app.json`. Leave the module empty: a language pack
-  has none.
+1. Відредагуйте `translations/uk.json`.
+2. Збільште значення `version` у `filex-app.json`.
+3. Перебудуйте маніфест.
+4. Запустіть валідатор.
+5. Надішліть зміни до гілки `main`.
 
-The review says *Language pack* and how much of that server's filex your pack
-translates. After installing, pick the language in **Settings → Preferences →
-Language** — or, on a public share page, in the language row at the bottom.
+## Оновлення каталогу рядків
 
-A right-to-left language (Arabic, Hebrew, Persian, Urdu…) needs nothing
-extra: filex lays the whole interface out right to left in it — the file
-manager, the admin panel, the public pages and the e-mails alike.
-
-## 5. Keep it current
-
-When a new filex version adds strings, refresh the catalogue and pick up the
-new keys (they are added empty; keys filex no longer has are dropped, by name):
+Після виходу нової версії filex синхронізуйте каталог із сервером:
 
 ```bash
-node scripts/pack.mjs sync --from v0.44.0                  # a filex release
-node scripts/pack.mjs sync --from https://files.example.com  # your own server
+node scripts/pack.mjs sync --from https://your-filex.example.com
 ```
 
-Then translate what is new, bump `version` in `filex-app.json`, and use
-**Upgrade** on the pack's row in **Plugins → Apps**.
+Або з конкретного релізу:
 
-`sync` also names the keys whose **English changed** since your last sync:
-
-```
-[es] 3 key(s) whose English changed - translate them again (the old translation shows until you do): users.subtitle, …
+```bash
+node scripts/pack.mjs sync --from v0.61.2
 ```
 
-Their translation was written for the old words. It stays, and filex keeps
-showing it, until you translate the key again - so read each one against the
-new English in `catalogue/filex-catalogue-en.json`.
+Після синхронізації перекладіть нові та змінені рядки, перебудуйте пакет і повторно запустіть перевірку.
 
-A key filex no longer has leaves `translations/<tag>.json`, translated or not:
-every filex release drops a few, and a validator of your own that refuses keys
-the catalogue does not have would otherwise fail on each one. Its wording is
-still in your git history when the same idea comes back under another name.
-The plural forms your language adds to a key filex still has (`<key>_few`)
-stay. A retired key written back by hand is kept **out of** `filex-app.json`
-by `build`, so it never shows up as a warning on a pack that is otherwise
-clean.
+## Видалення
 
-## What is in here
+Відкрийте **Admin → Plugins → Apps**, знайдіть український мовний пакет і виберіть **Remove**. Користувачі, які вибрали українську, автоматично перейдуть на наступну доступну мову.
 
-```
-filex-app.json                     the pack filex installs (written by `build`)
-translations/<tag>.json            your translation — the file you edit
-catalogue/filex-catalogue-en.json  every string of filex, in English
-catalogue/filex-catalogue-context.json   per key: table, rules, plural, Turkish reference, where used
-scripts/pack.mjs                   start · next · build · sync
-scripts/validate.mjs               the validator (the same one filex's own tests use)
-.github/workflows/validate.yml     CI
-```
+## Корисні посилання
 
-The catalogue here is for **filex v0.61.2**. Every filex release attaches its
-own (`filex-catalogue-en.json`), and every running server serves it at
-`/admin/i18n/filex-catalogue-en.json`.
+- [Документація filex](https://docs.filex.sh/)
+- [Мовні пакети filex](https://docs.filex.sh/PLUGIN-KIT#writing-a-language-pack)
+- [Репозиторій filex](https://github.com/BRF-Tech/filex)
+- [Шаблон мовного пакета](https://github.com/BRF-Tech/filex-lang-template)
 
-## License
+## Ліцензія
 
-[MIT](LICENSE). Translations you write are yours; licensing them under MIT too
-lets every filex server use them.
+MIT. Докладніше дивіться у файлі [LICENSE](LICENSE).

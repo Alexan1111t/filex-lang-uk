@@ -13,6 +13,7 @@ const protect = (value) => {
     return token;
   };
   let text = value
+    .replace(/\bfilex(?:-watch)?\b/gi, keep)
     .replace(/\{[^{}]*\}/g, keep)
     .replace(/`[^`]*`/g, keep)
     .replace(/https?:\/\/[^\s)]+/g, keep)
